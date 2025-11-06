@@ -63,6 +63,35 @@ const renderFieldValue = (value: any) => {
   return strValue
 }
 
+// Function to convert image reference to proper URL
+const getImageUrl = (img: string): string => {
+  if (!img) return ''
+  
+  // If it's already a full URL (http/https), return as is
+  if (img.startsWith('http://') || img.startsWith('https://')) {
+    // Check if it's a Google Drive URL
+    const driveMatch = img.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+    if (driveMatch && driveMatch[1]) {
+      const fileId = driveMatch[1]
+      return `https://drive.google.com/uc?export=view&id=${fileId}`
+    }
+    return img
+  }
+  
+  // If it's a local image reference (like "image1", "image2"), add path and extension
+  if (img.match(/^image\d+$/)) {
+    return `/${img}.jpeg`
+  }
+  
+  // If it already has extension, just add leading slash
+  if (img.includes('.')) {
+    return img.startsWith('/') ? img : `/${img}`
+  }
+  
+  // Default: assume it's in public folder
+  return `/${img}`
+}
+
 function SpotlightCenter() {
   const [spotlights, setSpotlights] = useState<Spotlight[]>([])
   const [loading, setLoading] = useState(true)
@@ -150,13 +179,14 @@ function SpotlightCenter() {
                   {(spotlight.icon || spotlight.img) && (
                     <div className="spotlight-icon" style={{ marginBottom: '0.5em', display: 'flex', justifyContent: 'center' }}>
                       {spotlight.img ? (
-                        <img src={spotlight.img} alt="Spotlight image" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+                        <img src={getImageUrl(spotlight.img)} alt="Spotlight image" style={{ width: '250px', height: '250px', objectFit: 'cover', display: 'block', borderRadius: '20%' }} />
                       ) : (
-                        renderIcon(spotlight.icon)
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          {renderIcon(spotlight.icon)}
+                        </div>
                       )}
                     </div>
                   )}
-                  <div className="spotlight-id">ID: {spotlight.id}</div>
                   <h3>
                     {spotlight.title || spotlight.name || 'Untitled'}
                     {spotlight.snug && ` (${spotlight.snug})`}
@@ -180,7 +210,7 @@ function SpotlightCenter() {
                   <div className="spotlight-extra-data">
                     {Object.entries(spotlight).map(([key, value]) => {
                       // Skip already displayed fields
-                      if (['id', 'title', 'name', 'description', 'created_at', 'icon', 'img', 'snug'].includes(key)) {
+                      if (['id', 'title', 'name', 'description', 'created_at', 'icon', 'img', 'snug', 'total_supply', 'market_cap', 'symbol', 'price', 'trading_volume'].includes(key)) {
                         return null
                       }
                       return (
