@@ -12,7 +12,7 @@ function App() {
     // Test Supabase connection
     const testConnection = async () => {
       try {
-        const { error } = await supabase.from('_test').select('count').limit(1)
+        await supabase.from('_test').select('count').limit(1)
         // If we get here without error or with a "relation does not exist" error, connection works
         setSupabaseConnected(true)
       } catch (err) {

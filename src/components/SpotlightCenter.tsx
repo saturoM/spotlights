@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import './SpotlightCenter.css'
-import React from 'react'
 import * as Icons from 'lucide-react'
 
 interface Spotlight {
@@ -68,11 +67,6 @@ function SpotlightCenter() {
   const [spotlights, setSpotlights] = useState<Spotlight[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [newSpotlight, setNewSpotlight] = useState({
-    title: '',
-    description: ''
-  })
-  const [isAdding, setIsAdding] = useState(false)
 
   // Fetch spotlights from Supabase
   const fetchSpotlights = async () => {
@@ -100,59 +94,6 @@ function SpotlightCenter() {
       console.error('Error fetching spotlights:', err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  // Add new spotlight
-  const addSpotlight = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!newSpotlight.title.trim()) {
-      setError('Title is required')
-      return
-    }
-
-    try {
-      setIsAdding(true)
-      const { data, error } = await supabase
-        .from('spotlight')
-        .insert([newSpotlight])
-        .select()
-
-      if (error) throw error
-
-      if (data) {
-        setSpotlights([...data, ...spotlights])
-        setNewSpotlight({ title: '', description: '' })
-        setError(null)
-      }
-    } catch (err: any) {
-      setError(err.message)
-      console.error('Error adding spotlight:', err)
-    } finally {
-      setIsAdding(false)
-    }
-  }
-
-  // Delete spotlight
-  const deleteSpotlight = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this spotlight?')) {
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('spotlight')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
-      setSpotlights(spotlights.filter(s => s.id !== id))
-      setError(null)
-    } catch (err: any) {
-      setError(err.message)
-      console.error('Error deleting spotlight:', err)
     }
   }
 
