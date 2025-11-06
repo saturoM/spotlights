@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './SpotlightCenter.css'
 import * as Icons from 'lucide-react'
@@ -93,6 +94,7 @@ const getImageUrl = (img: string): string => {
 }
 
 function SpotlightCenter() {
+  const navigate = useNavigate()
   const [spotlights, setSpotlights] = useState<Spotlight[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -150,23 +152,23 @@ function SpotlightCenter() {
   return (
     <div className="spotlight-center">
       <div className="spotlight-header">
-        <h2>✨ Spotlight Center</h2>
-        <p className="subtitle">Manage your spotlights</p>
+        <h2>✨ Центр Spotlight</h2>
+        <p className="subtitle">Управление вашими проектами</p>
       </div>
 
       {error && (
         <div className="error-message">
-          <strong>Error:</strong> {error}
+          <strong>Ошибка:</strong> {error}
         </div>
       )}
 
       {/* Spotlights List */}
       <div className="spotlights-list">
         {loading ? (
-          <div className="loading">Loading spotlights...</div>
+          <div className="loading">Загрузка проектов...</div>
         ) : spotlights.length === 0 ? (
           <div className="empty-state">
-            <p>No spotlights yet. Add your first one above!</p>
+            <p>Проекты пока отсутствуют</p>
           </div>
         ) : (
           spotlights.map((spotlight) => {
@@ -174,7 +176,12 @@ function SpotlightCenter() {
             console.log('Rendering spotlight:', spotlight)
             
             return (
-              <div key={spotlight.id} className="spotlight-card">
+              <div 
+                key={spotlight.id} 
+                className="spotlight-card"
+                onClick={() => navigate(`/spotlight/${spotlight.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="spotlight-content">
                   {(spotlight.icon || spotlight.img) && (
                     <div className="spotlight-icon" style={{ marginBottom: '0.5em', display: 'flex', justifyContent: 'center' }}>
@@ -228,7 +235,7 @@ function SpotlightCenter() {
       </div>
 
       <div className="spotlight-count">
-        Total: {spotlights.length} spotlight{spotlights.length !== 1 ? 's' : ''}
+        Всего проектов: {spotlights.length}
       </div>
     </div>
   )
