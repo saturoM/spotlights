@@ -168,12 +168,12 @@ function SpotlightDetail() {
 
         {spotlight.created_at && (
           <div className="detail-section">
-            <h2>Інформація</h2>
+            <h2>Информация</h2>
             <div className="detail-info">
               <div className="info-row">
-                <span className="info-label">Дата створення:</span>
+                <span className="info-label">Дата создания:</span>
                 <span className="info-value">
-                  {new Date(spotlight.created_at).toLocaleDateString('uk-UA', {
+                  {new Date(spotlight.created_at).toLocaleDateString('ru-RU', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -191,7 +191,7 @@ function SpotlightDetail() {
           !['id', 'created_at', 'name', 'symbol', 'total_supply', 'market_cap', 'price', 'trading_volume', 'img', 'description'].includes(key)
         ) && (
           <div className="detail-section">
-            <h2>Додаткова інформація</h2>
+            <h2>Дополнительная информация</h2>
             <div className="detail-extra">
               {Object.entries(spotlight).map(([key, value]) => {
                 if (['id', 'created_at', 'name', 'symbol', 'total_supply', 'market_cap', 'price', 'trading_volume', 'img', 'description'].includes(key)) {
