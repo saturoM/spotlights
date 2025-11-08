@@ -9,16 +9,46 @@ interface FormState {
   confirmPassword: string
 }
 
+type AuthMode = 'signup' | 'login'
+
+type NetworkKey = 'bsc' | 'tron' | 'solana' | 'ton' | 'eth'
+
 const initialFormState: FormState = {
   email: '',
   password: '',
   confirmPassword: ''
 }
 
-type AuthMode = 'signup' | 'login'
-
 const hashPassword = async (password: string): Promise<string> => {
   return password
+}
+
+const NETWORKS: Record<NetworkKey, { label: string; address: string; description: string }> = {
+  bsc: {
+    label: 'BSC • BEP20',
+    address: '0xBc92de905b59a3C87478BE0b2E7ff37c8a494d8a',
+    description: 'Binance Smart Chain (BEP-20)'
+  },
+  tron: {
+    label: 'TRON • TRC20',
+    address: 'TQEVdQEawnvGHh4Kmp167USEn3PcCms7in',
+    description: 'TRON Network (TRC-20)'
+  },
+  solana: {
+    label: 'Solana',
+    address: 'C5e4YhJEnt8aWZvcQ5fXuSdyzaPbsrpCcLst4EonkVDh',
+    description: 'Solana Network'
+  },
+  ton: {
+    label: 'TON',
+    address: 'UQBQqLqL3pavNGl-Sijhm6EsC1ylN-_zxdx9QTdrSpSPlGvE',
+    description: 'TON Blockchain'
+  },
+  eth: {
+    label: 'Ethereum • ERC20',
+    address: '0xf945D03eB72Fda50c2CD76b72746f3d2a983773D',
+    description: 'Ethereum Network (ERC-20)'
+  }
 }
 
 const Header = () => {
@@ -30,11 +60,15 @@ const Header = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
   const [authMode, setAuthMode] = useState<AuthMode>('signup')
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false)
+  const [selectedNetworkKey, setSelectedNetworkKey] = useState<NetworkKey>('bsc')
+  const [copyStatus, setCopyStatus] = useState('')
 
   const STORAGE_KEY = 'spotlight_user'
 
   useEffect(() => {
-    if (isModalOpen) {
+    const shouldLock = isModalOpen || isTopUpModalOpen
+    if (shouldLock) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
@@ -43,7 +77,7 @@ const Header = () => {
     return () => {
       document.body.style.overflow = ''
     }
-  }, [isModalOpen])
+  }, [isModalOpen, isTopUpModalOpen])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -221,8 +255,29 @@ const Header = () => {
   }
 
   const handleTopUp = () => {
-    // TODO: replace with real top-up flow
-    alert('Функция пополнения скоро будет доступна.')
+    setCopyStatus('')
+    setSelectedNetworkKey('bsc')
+    setIsTopUpModalOpen(true)
+  }
+
+  const handleTopUpClose = () => {
+    setIsTopUpModalOpen(false)
+    setCopyStatus('')
+  }
+
+  const handleCopyAddress = async () => {
+    const address = NETWORKS[selectedNetworkKey].address
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(address)
+        setCopyStatus('Адрес скопирован')
+      } else {
+        throw new Error('Clipboard API недоступен')
+      }
+    } catch (copyError) {
+      setCopyStatus('Не удалось скопировать. Скопируйте вручную.')
+    }
+    setTimeout(() => setCopyStatus(''), 3000)
   }
 
   const handleLogout = async () => {
@@ -389,6 +444,53 @@ const Header = () => {
                     : 'Войти'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isTopUpModalOpen && (
+        <div className="modal-overlay" onClick={handleTopUpClose}>
+          <div className="modal topup-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Пополнение аккаунта</h2>
+              <button className="close-button" onClick={handleTopUpClose} aria-label="Закрыть окно">
+                ×
+              </button>
+            </div>
+            <div className="topup-content">
+              <div className="network-selector">
+                {Object.entries(NETWORKS).map(([key, network]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`network-button ${selectedNetworkKey === key ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedNetworkKey(key as NetworkKey)
+                      setCopyStatus('')
+                    }}
+                  >
+                    <span className="network-title">{network.label}</span>
+                    <span className="network-subtitle">{network.description}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="address-section">
+                <p className="address-label">Адрес для пополнения</p>
+                <div className="address-box">
+                  <span className="address-value">{NETWORKS[selectedNetworkKey].address}</span>
+                  <div className="address-actions">
+                    <button type="button" className="copy-button" onClick={handleCopyAddress}>
+                      Скопировать
+                    </button>
+                  </div>
+                </div>
+                {copyStatus && <p className="copy-status">{copyStatus}</p>}
+                <p className="address-hint">
+                  Отправляйте только совместимые активы в выбранной сети. Пополнение в другой сети может привести к потере средств.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}

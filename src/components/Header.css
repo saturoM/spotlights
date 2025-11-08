@@ -62,22 +62,312 @@
 }
 
 .topup-button {
-  background: transparent;
-  color: #f5f5f5;
-  border: 1px solid rgba(102, 126, 234, 0.6);
+  background: rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(118, 75, 162, 0.35);
+  color: #d9ddff;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .topup-button:hover {
+  background: rgba(102, 126, 234, 0.25);
   transform: translateY(-2px);
-  background: rgba(102, 126, 234, 0.15);
-  box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+}
+
+.topup-button:active {
+  transform: translateY(0);
+}
+
+.topup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.network-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.network-button {
+  background: rgba(18, 18, 28, 0.85);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 12px;
+  padding: 0.95rem 1.1rem;
+  text-align: left;
+  color: #d9dbf6;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.network-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0) 30%, rgba(102, 126, 234, 0.15) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.network-button:hover {
+  border-color: rgba(118, 75, 162, 0.6);
+  transform: translateY(-2px);
+}
+
+.network-button:hover::after {
+  opacity: 1;
+}
+
+.network-button.selected {
+  border-color: rgba(118, 75, 162, 0.9);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.35);
+}
+
+.network-button.selected::after {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.35) 100%);
+}
+
+.network-title {
+  display: block;
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+}
+
+.network-subtitle {
+  display: block;
+  font-size: 0.85rem;
+  color: #9fa2c2;
+}
+
+.address-section {
+  flex: 1;
+  background: rgba(18, 18, 28, 0.8);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.address-label {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #ccd0f1;
+  letter-spacing: 0.04em;
+}
+
+.address-box {
+  background: rgba(9, 9, 16, 0.9);
+  border: 1px solid rgba(102, 126, 234, 0.35);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.address-value {
+  color: #f5f6ff;
+  font-family: 'Fira Code', 'Roboto Mono', monospace;
+  font-size: 1.05rem;
+  word-break: break-all;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.address-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.copy-button {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.8) 100%);
+  border: none;
+  color: #ffffff;
+  padding: 0.65rem 1.4rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.copy-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.copy-button:active {
+  transform: translateY(0);
+}
+
+.copy-status {
+  margin: 0;
+  color: #67e8f9;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.address-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #8f93b5;
+  line-height: 1.6;
+  border-left: 3px solid rgba(102, 126, 234, 0.45);
+  padding-left: 0.9rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 10, 0.75);
+  display: grid;
+  place-items: center;
+  z-index: 1100;
+  padding: 1.5rem;
+}
+
+.modal {
+  background: #18181c;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+.modal.topup-modal {
+  max-width: 720px;
+  padding: 2.25rem;
+  background: linear-gradient(160deg, rgba(20, 20, 30, 0.95) 0%, rgba(12, 12, 18, 0.98) 100%);
+  border: 1px solid rgba(118, 75, 162, 0.4);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+  border-radius: 18px;
+  margin-top: 400px;
+}
+
+.topup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.topup-subtitle {
+  margin: 0;
+  color: #c5c7e4;
+  font-size: 0.95rem;
+}
+
+.network-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.network-option {
+  background: rgba(15, 15, 20, 0.7);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  color: #d9dbf6;
+  transition: all 0.25s ease;
+}
+
+.network-option .network-name {
+  display: block;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.network-option .network-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: #9b9ec0;
+  margin-top: 0.2rem;
+}
+
+.network-option:hover {
+  border-color: rgba(118, 75, 162, 0.6);
+  transform: translateY(-2px);
+}
+
+.network-option.selected {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.35) 0%, rgba(118, 75, 162, 0.45) 100%);
+  border-color: rgba(118, 75, 162, 0.7);
+  color: #ffffff;
+}
+
+.topup-address-block {
+  background: rgba(15, 15, 20, 0.7);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.address-label {
+  font-size: 0.85rem;
+  color: #9fa1c0;
+  letter-spacing: 0.02em;
+}
+
+.address-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.address-value {
+  flex: 1;
+  word-break: break-all;
+  font-family: 'Roboto Mono', 'Fira Code', monospace;
+  color: #f3f5ff;
+}
+
+.copy-button {
+  background: rgba(102, 126, 234, 0.25);
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  color: #ffffff;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  background: rgba(102, 126, 234, 0.4);
+}
+
+.copy-status {
+  margin: 0;
+  color: #67e8f9;
+  font-size: 0.9rem;
+}
+
+.topup-hint {
+  font-size: 0.85rem;
+  color: #9699be;
+  line-height: 1.5;
+  border-left: 3px solid rgba(102, 126, 234, 0.5);
+  padding-left: 0.75rem;
 }
 
 .register-button {
@@ -96,29 +386,6 @@
 .register-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(118, 75, 162, 0.45);
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(8, 8, 10, 0.75);
-  display: grid;
-  place-items: center;
-  z-index: 1100;
-  padding: 1.5rem;
-}
-
-.modal {
-  background: #18181c;
-  border-radius: 16px;
-  margin-top: 300px;
-  width: 100%;
-  max-width: 420px;
-  padding: 2rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(102, 126, 234, 0.25);
-  max-height: 95vh;
-  overflow-y: auto;
 }
 
 .modal-header {
@@ -282,5 +549,20 @@
   .header-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+}
+
+@media (min-width: 860px) {
+  .topup-content {
+    flex-direction: row;
+    gap: 2.25rem;
+  }
+
+  .network-selector {
+    flex: 0 0 240px;
+  }
+
+  .address-section {
+    flex: 1;
   }
 }
