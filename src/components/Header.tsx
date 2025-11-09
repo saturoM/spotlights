@@ -11,6 +11,12 @@ interface FormState {
 
 type AuthMode = 'signup' | 'login'
 
+interface StoredUser {
+  email: string
+  type?: string
+  balance?: number | string | null
+}
+
 const initialFormState: FormState = {
   email: '',
   password: '',
@@ -19,6 +25,19 @@ const initialFormState: FormState = {
 
 const hashPassword = async (password: string): Promise<string> => {
   return password
+}
+
+const parseBalanceValue = (value: unknown): number | null => {
+  if (typeof value === 'number' && !Number.isNaN(value)) {
+    return value
+  }
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value.replace(',', '.'))
+    if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+  return null
 }
 
 const Header = () => {
@@ -30,6 +49,8 @@ const Header = () => {
   const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
+  const [currentUserType, setCurrentUserType] = useState<string | null>(null)
+  const [currentUserBalance, setCurrentUserBalance] = useState<number | null>(null)
   const [authMode, setAuthMode] = useState<AuthMode>('signup')
 
   const STORAGE_KEY = 'spotlight_user'
@@ -46,20 +67,52 @@ const Header = () => {
     }
   }, [isModalOpen])
 
+  const syncUserFromDb = async (email: string) => {
+    const { data, error } = await supabase
+      .from('spotlights_users')
+      .select('email, type, balance')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Не удалось обновить данные пользователя:', error)
+      return
+    }
+
+    if (data) {
+      const userType = data.type ?? 'user'
+      const parsedBalance = parseBalanceValue(data.balance)
+      const balance = parsedBalance ?? 0
+      setCurrentUserType(userType)
+      setCurrentUserBalance(balance)
+
+      if (typeof window !== 'undefined') {
+        const stored: StoredUser = { email, type: userType, balance }
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
+      }
+    }
+  }
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    try {
-      const storedUser = window.localStorage.getItem(STORAGE_KEY)
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser)
-        if (parsed?.email) {
-          setCurrentUserEmail(parsed.email)
+    ;(async () => {
+      try {
+        const storedUserRaw = window.localStorage.getItem(STORAGE_KEY)
+        if (storedUserRaw) {
+          const parsed: StoredUser | null = JSON.parse(storedUserRaw)
+          if (parsed?.email) {
+            setCurrentUserEmail(parsed.email)
+            setCurrentUserType(parsed.type ?? null)
+            const storedBalance = parseBalanceValue(parsed.balance)
+            setCurrentUserBalance(storedBalance)
+            await syncUserFromDb(parsed.email)
+          }
         }
+      } catch (storageError) {
+        console.error('Failed to read stored user', storageError)
       }
-    } catch (storageError) {
-      console.error('Failed to read stored user', storageError)
-    }
+    })()
   }, [])
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +201,8 @@ const Header = () => {
 
         const { error: insertError } = await supabase.from('spotlights_users').insert({
           email,
-          password: passwordHash
+          password: passwordHash,
+          type: 'user'
         })
 
         if (insertError) {
@@ -156,11 +210,10 @@ const Header = () => {
           return
         }
 
-        const savedUser = { email }
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedUser))
-        }
         setCurrentUserEmail(email)
+        setCurrentUserType('user')
+        setCurrentUserBalance(0)
+        await syncUserFromDb(email)
         setSuccessMessage('Регистрация прошла успешно!')
         setFormState(initialFormState)
         setTimeout(() => {
@@ -179,7 +232,7 @@ const Header = () => {
 
         const { data: userRecord, error: userError } = await supabase
           .from('spotlights_users')
-          .select('email, password')
+          .select('email, password, type, balance')
           .eq('email', email)
           .maybeSingle()
 
@@ -193,11 +246,16 @@ const Header = () => {
           return
         }
 
-        const savedUser = { email }
+        const userType = userRecord.type ?? 'user'
+        const parsedBalance = parseBalanceValue(userRecord.balance)
+        const userBalance = parsedBalance ?? 0
+        const savedUser: StoredUser = { email, type: userType, balance: userBalance }
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedUser))
         }
         setCurrentUserEmail(email)
+        setCurrentUserType(userType)
+        setCurrentUserBalance(userBalance)
         setSuccessMessage('Вход выполнен успешно!')
         setFormState(initialFormState)
         setTimeout(() => {
@@ -226,6 +284,14 @@ const Header = () => {
     navigate('/topup')
   }
 
+  const handleOpenAdmin = () => {
+    navigate('/admin')
+  }
+
+  const handleOpenDeposits = () => {
+    navigate('/deposits')
+  }
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
@@ -237,6 +303,8 @@ const Header = () => {
       window.localStorage.removeItem(STORAGE_KEY)
     }
     setCurrentUserEmail(null)
+    setCurrentUserType(null)
+    setCurrentUserBalance(null)
     setFormState(initialFormState)
     setErrors([])
     setSuccessMessage('')
@@ -262,10 +330,28 @@ const Header = () => {
       </nav>
 
       <div className="header-actions">
+        {currentUserType === 'admin' && (
+          <>
+            <button className="admin-button" onClick={handleOpenAdmin}>
+              Админ панель
+            </button>
+            <button className="admin-button" onClick={handleOpenDeposits}>
+              Депозиты
+            </button>
+          </>
+        )}
         {currentUserEmail && (
-          <button className="topup-button" onClick={handleTopUp}>
-            Пополнить
-          </button>
+          <div className="balance-wrapper">
+            <span className="balance-label">
+              Баланс:{' '}
+              <span className="balance-value">
+                {currentUserBalance !== null ? currentUserBalance.toFixed(2) : '—'} USDT
+              </span>
+            </span>
+            <button className="topup-button" onClick={handleTopUp}>
+              Пополнить
+            </button>
+          </div>
         )}
         <button
           className="register-button"
