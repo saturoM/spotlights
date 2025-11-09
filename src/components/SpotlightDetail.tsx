@@ -124,6 +124,13 @@ function SpotlightDetail() {
             {spotlight.symbol && (
               <span className="detail-symbol">({spotlight.symbol})</span>
             )}
+            <button
+              className="detail-allocation-button"
+              type="button"
+              onClick={() => navigate(`/allocation?coinId=${spotlight.id}`)}
+            >
+              Добавить аллокацию
+            </button>
           </div>
         </div>
 

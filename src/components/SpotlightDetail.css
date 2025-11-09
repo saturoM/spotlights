@@ -61,6 +61,33 @@
 
 .detail-title-section {
   text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-allocation-button {
+  margin-left: auto;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.96) 100%);
+  border: none;
+  color: #f2f4ff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 16px 30px rgba(102, 126, 234, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.detail-allocation-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(102, 126, 234, 0.45);
+}
+
+.detail-allocation-button:active {
+  transform: translateY(-1px);
 }
 
 .detail-title {
@@ -211,6 +238,18 @@
 
   .info-value {
     text-align: left;
+  }
+
+  .detail-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .detail-allocation-button {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
   }
 }
 

@@ -7,6 +7,7 @@ import WithdrawPage from './components/WithdrawPage'
 import AdminDashboard from './components/AdminDashboard'
 import DepositsPage from './components/DepositsPage'
 import WithdrawalsPage from './components/WithdrawalsPage'
+import AllocationPage from './components/AllocationPage'
 import Header from './components/Header'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/deposits" element={<DepositsPage />} />
             <Route path="/withdrawals" element={<WithdrawalsPage />} />
+            <Route path="/allocation" element={<AllocationPage />} />
           </Routes>
         </main>
       </div>

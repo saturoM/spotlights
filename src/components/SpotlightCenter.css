@@ -5,7 +5,11 @@
 }
 
 .spotlight-header {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
@@ -300,6 +304,34 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+.allocation-button {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.95) 100%);
+  border: none;
+  color: #f5f7ff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.85rem 1.6rem;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 18px 32px rgba(102, 126, 234, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.allocation-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 38px rgba(102, 126, 234, 0.45);
+}
+
+.allocation-button:active {
+  transform: translateY(0);
+}
+
+.allocation-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 @media (max-width: 768px) {
   .spotlight-center {
     padding: 1rem;
@@ -315,6 +347,11 @@
 
   .spotlights-list {
     grid-template-columns: 1fr;
+  }
+
+  .allocation-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 

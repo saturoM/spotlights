@@ -199,8 +199,13 @@ function SpotlightCenter() {
   return (
     <div className="spotlight-center">
       <div className="spotlight-header">
-        <h2>✨ Центр Spotlight</h2>
-        <p className="subtitle">Управление вашими проектами</p>
+        <div>
+          <h2>✨ Центр Spotlight</h2>
+          <p className="subtitle">Управление вашими проектами</p>
+        </div>
+        <button className="allocation-button" onClick={() => navigate('/allocation')}>
+          Добавить аллокацию
+        </button>
       </div>
 
       {error && (
@@ -231,9 +236,7 @@ function SpotlightCenter() {
                     {spotlight.img ? (
                       <img src={getImageUrl(spotlight.img)} alt="Spotlight image" style={{ width: '250px', height: '250px', objectFit: 'cover', display: 'block', borderRadius: '20%' }} />
                     ) : (
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        {renderIcon(spotlight.icon)}
-                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>{renderIcon(spotlight.icon)}</div>
                     )}
                   </div>
                 )}
@@ -241,7 +244,9 @@ function SpotlightCenter() {
                   {spotlight.title || spotlight.name || 'Untitled'}
                   {spotlight.snug && ` (${spotlight.snug})`}
                 </h3>
-                {spotlight.description && <p className="spotlight-description">{spotlight.description}</p>}
+                {spotlight.description && (
+                  <p className="spotlight-description">{spotlight.description}</p>
+                )}
                 <div className="spotlight-extra-data">
                   {Object.entries(spotlight).map(([key, value]) => {
                     if (
@@ -315,7 +320,7 @@ function SpotlightCenter() {
           ))
         )}
       </div>
-
+ 
     </div>
   )
 }
