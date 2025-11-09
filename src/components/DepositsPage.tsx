@@ -8,7 +8,7 @@ const STORAGE_KEY = 'spotlight_user'
 interface StoredUser {
   email: string
   type?: string
-  balance?: number
+  balance?: number | string | null
 }
 
 interface DepositRecord {
@@ -30,6 +30,19 @@ const DepositsPage = () => {
   const [balanceError, setBalanceError] = useState('')
   const [balanceStatus, setBalanceStatus] = useState('')
   const [balanceLoading, setBalanceLoading] = useState(false)
+
+  const parseBalanceValue = (value: unknown): number | null => {
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      return value
+    }
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value.replace(',', '.'))
+      if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
+        return parsed
+      }
+    }
+    return null
+  }
 
   const fetchDeposits = async () => {
     setLoading(true)
@@ -104,10 +117,8 @@ const DepositsPage = () => {
         .maybeSingle()
 
       if (error) throw error
-      const balanceValue = data && typeof data.balance === 'number' && !Number.isNaN(data.balance)
-        ? data.balance
-        : 0
-      setBalanceInput(balanceValue.toString())
+      const balanceValue = parseBalanceValue(data?.balance)
+      setBalanceInput(balanceValue !== null ? balanceValue.toString() : '')
     } catch (err: any) {
       console.error('Не удалось получить баланс пользователя', err)
       setBalanceError(err.message || 'Не удалось получить текущий баланс.')
