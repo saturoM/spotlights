@@ -166,47 +166,7 @@ function SpotlightDetail() {
           </div>
         )}
 
-        {spotlight.created_at && (
-          <div className="detail-section">
-            <h2>Информация</h2>
-            <div className="detail-info">
-              <div className="info-row">
-                <span className="info-label">Дата создания:</span>
-                <span className="info-value">
-                  {new Date(spotlight.created_at).toLocaleDateString('ru-RU', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Display all other fields */}
-        {Object.entries(spotlight).some(([key]) => 
-          !['id', 'created_at', 'name', 'symbol', 'total_supply', 'market_cap', 'price', 'trading_volume', 'img', 'description'].includes(key)
-        ) && (
-          <div className="detail-section">
-            <h2>Дополнительная информация</h2>
-            <div className="detail-extra">
-              {Object.entries(spotlight).map(([key, value]) => {
-                if (['id', 'created_at', 'name', 'symbol', 'total_supply', 'market_cap', 'price', 'trading_volume', 'img', 'description'].includes(key)) {
-                  return null
-                }
-                return (
-                  <div key={key} className="info-row">
-                    <span className="info-label">{key}:</span>
-                    <span className="info-value">{String(value)}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+        {/* Removed auxiliary metadata block per request */}
       </div>
     </div>
   )

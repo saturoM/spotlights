@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { generateCoinSchedule } from '../lib/coinSchedule'
 import './AdminDashboard.css'
 
 const STORAGE_KEY = 'spotlight_user'
@@ -40,6 +41,7 @@ const AdminDashboard = () => {
   const [balanceError, setBalanceError] = useState('')
   const [balanceStatus, setBalanceStatus] = useState('')
   const [balanceLoading, setBalanceLoading] = useState(false)
+  const coinSchedule = useMemo(() => generateCoinSchedule({ eventCount: 30 }), [])
 
   const parseBalanceValue = (value: unknown): number | null => {
     if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -398,6 +400,82 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+      <section className="admin-positions">
+        <div className="admin-positions-header">
+          <div>
+            <h2>Розклад монет</h2>
+            <p>
+              Оновлено: {new Date(coinSchedule.metadata.generatedAt).toLocaleString('ru-RU')} · Активних:{' '}
+              {coinSchedule.metadata.activeCoins} із {coinSchedule.metadata.totalCoins} · Ротація кожні{' '}
+              {coinSchedule.metadata.stepHours.toFixed(2)} год.
+            </p>
+          </div>
+        </div>
+
+        <div className="admin-positions-grid">
+          {coinSchedule.initialState.active.map((coin) => (
+            <div key={coin.id} className="admin-coin-card admin-coin-card--active">
+              <div className="admin-coin-card-header">
+                <span className="admin-coin-id">Монета #{coin.id.toString().padStart(2, '0')}</span>
+                <span className="admin-coin-status is-active">Активна</span>
+              </div>
+              <div className="admin-coin-card-body">
+                <div>
+                  <span className="admin-coin-label">Старт</span>
+                  <span className="admin-coin-value">
+                    {coin.activatedAt ? new Date(coin.activatedAt).toLocaleString('ru-RU') : '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="admin-coin-label">Завершення</span>
+                  <span className="admin-coin-value">
+                    {coin.expiresAt ? new Date(coin.expiresAt).toLocaleString('ru-RU') : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="admin-positions-grid admin-positions-grid--inactive">
+          {coinSchedule.initialState.inactive.map((coin) => (
+            <div key={coin.id} className="admin-coin-card admin-coin-card--inactive">
+              <div className="admin-coin-card-header">
+                <span className="admin-coin-id">Монета #{coin.id.toString().padStart(2, '0')}</span>
+                <span className="admin-coin-status is-inactive">Неактивна</span>
+              </div>
+              <div className="admin-coin-card-body">
+                <span className="admin-coin-wait">Очікує черги на активацію</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="admin-positions-events">
+          <h3>Найближчі ротації</h3>
+          <div className="admin-positions-event-list">
+            {coinSchedule.events.map((event) => (
+              <div key={event.index} className="admin-positions-event">
+                <div className="admin-positions-event-date">
+                  #{event.index.toString().padStart(2, '0')} ·{' '}
+                  {new Date(event.timestamp).toLocaleString('ru-RU')}
+                </div>
+                <div className="admin-positions-event-details">
+                  <span className="expire">
+                    Завершує: #{event.expiringCoin.toString().padStart(2, '0')}
+                  </span>
+                  <span className="activate">
+                    Активується: #{event.activatingCoin.toString().padStart(2, '0')}
+                  </span>
+                  <span className="expire-at">
+                    До: {new Date(event.activationEndsAt).toLocaleString('ru-RU')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

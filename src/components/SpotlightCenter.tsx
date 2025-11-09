@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './SpotlightCenter.css'
 import * as Icons from 'lucide-react'
+import { generateCoinSchedule } from '../lib/coinSchedule'
 
 interface Spotlight {
   id: number
@@ -98,6 +99,52 @@ function SpotlightCenter() {
   const [spotlights, setSpotlights] = useState<Spotlight[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const coinSchedule = useMemo(() => generateCoinSchedule({ eventCount: 20 }), [])
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+    []
+  )
+
+  const preparedSpotlights = useMemo(() => {
+    const activeCoinsById = new Map<number, (typeof coinSchedule.initialState.active)[number]>()
+    coinSchedule.initialState.active.forEach((coin) => {
+      activeCoinsById.set(coin.id, coin)
+    })
+
+    return spotlights
+      .map((spotlight) => {
+        const positionRaw = spotlight.position ?? spotlight.positions ?? spotlight.order ?? spotlight.coin_id
+        const position = typeof positionRaw === 'number' ? positionRaw : parseInt(String(positionRaw), 10)
+        const activeCoin = Number.isFinite(position) ? activeCoinsById.get(Number(position)) : undefined
+        const expiresTime = activeCoin ? new Date(activeCoin.expiresAt!).getTime() : Number.MAX_SAFE_INTEGER
+        return { spotlight, position, activeCoin, expiresTime }
+      })
+      .sort((a, b) => a.expiresTime - b.expiresTime)
+  }, [spotlights, coinSchedule])
+
+  const formatRemaining = (iso?: string | null) => {
+    if (!iso) return null
+    const target = new Date(iso).getTime()
+    const now = Date.now()
+    const diffMs = target - now
+    if (diffMs <= 0) return 'менее минуты'
+    const totalMinutes = Math.floor(diffMs / (60 * 1000))
+    const days = Math.floor(totalMinutes / (60 * 24))
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60)
+    const minutes = totalMinutes % 60
+    const parts = []
+    if (days > 0) parts.push(`${days} д`)
+    if (hours > 0) parts.push(`${hours} ч`)
+    if (minutes > 0 && days === 0) parts.push(`${minutes} мин`)
+    return parts.join(' ') || 'менее минуты'
+  }
 
   // Fetch spotlights from Supabase
   const fetchSpotlights = async () => {
@@ -171,66 +218,101 @@ function SpotlightCenter() {
             <p>Проекты пока отсутствуют</p>
           </div>
         ) : (
-          spotlights.map((spotlight) => {
-            // Log each spotlight for debugging
-            console.log('Rendering spotlight:', spotlight)
-            
-            return (
-              <div 
-                key={spotlight.id} 
-                className="spotlight-card"
-                onClick={() => navigate(`/spotlight/${spotlight.id}`)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="spotlight-content">
-                  {(spotlight.icon || spotlight.img) && (
-                    <div className="spotlight-icon" style={{ marginBottom: '0.5em', display: 'flex', justifyContent: 'center' }}>
-                      {spotlight.img ? (
-                        <img src={getImageUrl(spotlight.img)} alt="Spotlight image" style={{ width: '250px', height: '250px', objectFit: 'cover', display: 'block', borderRadius: '20%' }} />
-                      ) : (
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                          {renderIcon(spotlight.icon)}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <h3>
-                    {spotlight.title || spotlight.name || 'Untitled'}
-                    {spotlight.snug && ` (${spotlight.snug})`}
-                  </h3>
-                  {spotlight.description && (
-                    <p className="spotlight-description">{spotlight.description}</p>
-                  )}
-                  {spotlight.created_at && (
-                    <p className="spotlight-date">
-                      {new Date(spotlight.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  )}
-                  
-                  {/* Display all other fields */}
-                  <div className="spotlight-extra-data">
-                    {Object.entries(spotlight).map(([key, value]) => {
-                      // Skip already displayed fields
-                      if (['id', 'title', 'name', 'description', 'created_at', 'icon', 'img', 'snug', 'total_supply', 'market_cap', 'symbol', 'price', 'trading_volume'].includes(key)) {
-                        return null
-                      }
-                      return (
-                        <div key={key} className="data-field">
-                          <strong>{key}:</strong> {renderFieldValue(value)}
-                        </div>
-                      )
-                    })}
+          preparedSpotlights.map(({ spotlight, position, activeCoin }) => (
+            <div
+              key={spotlight.id}
+              className="spotlight-card"
+              onClick={() => navigate(`/spotlight/${spotlight.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="spotlight-content">
+                {(spotlight.icon || spotlight.img) && (
+                  <div className="spotlight-icon" style={{ marginBottom: '0.5em', display: 'flex', justifyContent: 'center' }}>
+                    {spotlight.img ? (
+                      <img src={getImageUrl(spotlight.img)} alt="Spotlight image" style={{ width: '250px', height: '250px', objectFit: 'cover', display: 'block', borderRadius: '20%' }} />
+                    ) : (
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        {renderIcon(spotlight.icon)}
+                      </div>
+                    )}
                   </div>
+                )}
+                <h3>
+                  {spotlight.title || spotlight.name || 'Untitled'}
+                  {spotlight.snug && ` (${spotlight.snug})`}
+                </h3>
+                {spotlight.description && <p className="spotlight-description">{spotlight.description}</p>}
+                <div className="spotlight-extra-data">
+                  {Object.entries(spotlight).map(([key, value]) => {
+                    if (
+                      [
+                        'id',
+                        'title',
+                        'name',
+                        'description',
+                        'created_at',
+                        'icon',
+                        'img',
+                        'snug',
+                        'total_supply',
+                        'market_cap',
+                        'symbol',
+                        'price',
+                        'trading_volume',
+                        'position',
+                        'positions',
+                        'order',
+                        'coin_id'
+                      ].includes(key)
+                    ) {
+                      return null
+                    }
+                    return (
+                      <div key={key} className="data-field">
+                        <strong>{key}:</strong> {renderFieldValue(value)}
+                      </div>
+                    )
+                  })}
                 </div>
+                {Number.isFinite(position) && (
+                  <div
+                    className={`spotlight-coin-schedule ${
+                      activeCoin ? 'spotlight-coin-schedule--active' : 'spotlight-coin-schedule--inactive'
+                    }`}
+                  >
+                    <div className="spotlight-coin-schedule-header">
+                      <span className="spotlight-coin-schedule-status">
+                        {activeCoin ? 'Активна' : 'Неактивна'}
+                      </span>
+                    </div>
+                    {activeCoin ? (
+                      <div className="spotlight-coin-schedule-body">
+                        <div>
+                          <span className="spotlight-coin-label">Старт</span>
+                          <span className="spotlight-coin-value">
+                            {dateFormatter.format(new Date(activeCoin.activatedAt!))}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="spotlight-coin-label">Завершение</span>
+                          <span className="spotlight-coin-value">
+                            {dateFormatter.format(new Date(activeCoin.expiresAt!))}
+                          </span>
+                        </div>
+                        <div className="spotlight-coin-countdown">
+                          Осталось: {formatRemaining(activeCoin.expiresAt)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="spotlight-coin-schedule-body">
+                        <div className="spotlight-coin-wait">Неактивна</div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )
-          })
+            </div>
+          ))
         )}
       </div>
 
