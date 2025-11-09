@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
+import { useState, useEffect, FormEvent, ChangeEvent, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Header.css'
@@ -52,8 +52,10 @@ const Header = () => {
   const [currentUserType, setCurrentUserType] = useState<string | null>(null)
   const [currentUserBalance, setCurrentUserBalance] = useState<number | null>(null)
   const [authMode, setAuthMode] = useState<AuthMode>('signup')
+  const [isBalanceMenuOpen, setIsBalanceMenuOpen] = useState(false)
 
   const STORAGE_KEY = 'spotlight_user'
+  const balanceMenuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (isModalOpen) {
@@ -325,6 +327,41 @@ const Header = () => {
     navigate('/withdraw')
   }
 
+  const handleBalanceActionSelect = (action: 'topup' | 'withdraw') => {
+    if (action === 'topup') {
+      handleTopUp()
+    } else {
+      handleWithdraw()
+    }
+    setIsBalanceMenuOpen(false)
+  }
+
+  const toggleBalanceMenu = () => {
+    setIsBalanceMenuOpen((prev) => !prev)
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (balanceMenuRef.current && !balanceMenuRef.current.contains(event.target as Node)) {
+        setIsBalanceMenuOpen(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsBalanceMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
   const handleOpenAdmin = () => {
     navigate('/admin')
   }
@@ -382,13 +419,39 @@ const Header = () => {
                 {currentUserBalance !== null ? currentUserBalance.toFixed(2) : '—'} USDT
               </span>
             </div>
-            <div className="balance-actions">
-              <button className="topup-button" onClick={handleTopUp}>
-                Пополнить
+            <div className="balance-actions" ref={balanceMenuRef}>
+              <button
+                type="button"
+                className={`balance-dropdown-trigger ${isBalanceMenuOpen ? 'open' : ''}`}
+                onClick={toggleBalanceMenu}
+                aria-haspopup="true"
+                aria-expanded={isBalanceMenuOpen}
+              >
+                Действие
+                <span className="balance-dropdown-icon" aria-hidden="true">
+                  ▾
+                </span>
               </button>
-              <button className="withdraw-button" onClick={handleWithdraw}>
-                Вывод
-              </button>
+              {isBalanceMenuOpen && (
+                <div className="balance-dropdown-menu" role="menu">
+                  <button
+                    type="button"
+                    className="balance-dropdown-item"
+                    onClick={() => handleBalanceActionSelect('topup')}
+                    role="menuitem"
+                  >
+                    Пополнить
+                  </button>
+                  <button
+                    type="button"
+                    className="balance-dropdown-item"
+                    onClick={() => handleBalanceActionSelect('withdraw')}
+                    role="menuitem"
+                  >
+                    Вывод
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

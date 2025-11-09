@@ -63,15 +63,13 @@
 
 .balance-card {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.85rem;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
   border-radius: 12px;
   background: rgba(16, 24, 48, 0.55);
   border: 1px solid rgba(102, 126, 234, 0.25);
   box-shadow: 0 12px 30px rgba(8, 12, 24, 0.35);
-  max-width: 200px;
-  width: 100%;
 }
 
 .balance-info {
@@ -114,52 +112,85 @@
   transform: translateY(0);
 }
 
-.topup-button {
-  background: rgba(102, 126, 234, 0.15);
-  border: 1px solid rgba(118, 75, 162, 0.35);
-  color: #d9ddff;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.topup-button:hover {
-  background: rgba(102, 126, 234, 0.25);
-  transform: translateY(-2px);
-}
-
-.topup-button:active {
-  transform: translateY(0);
-}
-
 .balance-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
+  position: relative;
 }
 
-.withdraw-button {
-  background: rgba(46, 204, 113, 0.18);
-  border: 1px solid rgba(46, 204, 113, 0.35);
-  color: #d6f5de;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+.balance-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.35));
+  border: 1px solid rgba(102, 126, 234, 0.45);
+  border-radius: 12px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  border-radius: 8px;
+  color: #e2e5ff;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+  backdrop-filter: blur(12px);
 }
 
-.withdraw-button:hover {
+.balance-dropdown-trigger:hover,
+.balance-dropdown-trigger.open {
   transform: translateY(-2px);
-  background: rgba(46, 204, 113, 0.28);
+  border-color: rgba(102, 126, 234, 0.7);
+  box-shadow: 0 12px 26px rgba(36, 50, 112, 0.4);
 }
 
-.withdraw-button:active {
-  transform: translateY(0);
+.balance-dropdown-trigger:focus {
+  outline: none;
+  border-color: rgba(102, 126, 234, 0.9);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+}
+
+.balance-dropdown-icon {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.balance-dropdown-trigger.open .balance-dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.balance-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 180px;
+  background: rgba(11, 15, 28, 0.95);
+  border: 1px solid rgba(102, 126, 234, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(6, 10, 24, 0.55);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 1200;
+  backdrop-filter: blur(18px);
+}
+
+.balance-dropdown-item {
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  text-align: left;
+  color: #dde1ff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.balance-dropdown-item:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.25));
+  transform: translateX(4px);
 }
 
 .topup-content {
