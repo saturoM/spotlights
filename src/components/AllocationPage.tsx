@@ -201,6 +201,12 @@ const AllocationPage = () => {
         } catch (storageError) {
           console.error('Failed to update stored user', storageError)
         }
+
+        window.dispatchEvent(
+          new CustomEvent('spotlight-balance-updated', {
+            detail: { balance: updatedBalance, email: currentUser.email }
+          })
+        )
       }
 
       setAmount('')

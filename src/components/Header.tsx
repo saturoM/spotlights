@@ -118,6 +118,22 @@ const Header = () => {
   }, [])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleBalanceUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ balance?: number | null }>
+      if (typeof customEvent.detail?.balance === 'number') {
+        setCurrentUserBalance(customEvent.detail.balance)
+      }
+    }
+
+    window.addEventListener('spotlight-balance-updated', handleBalanceUpdate)
+    return () => {
+      window.removeEventListener('spotlight-balance-updated', handleBalanceUpdate)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!currentUserEmail) return
 
     const channel = supabase
