@@ -335,9 +335,6 @@ const Header = () => {
             <button className="admin-button" onClick={handleOpenAdmin}>
               Админ панель
             </button>
-            <button className="admin-button" onClick={handleOpenDeposits}>
-              Депозиты
-            </button>
           </>
         )}
         {currentUserEmail && (
