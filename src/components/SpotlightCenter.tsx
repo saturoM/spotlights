@@ -5,6 +5,8 @@ import './SpotlightCenter.css'
 import * as Icons from 'lucide-react'
 import { generateCoinSchedule } from '../lib/coinSchedule'
 
+const STORAGE_KEY = 'spotlight_user'
+
 interface Spotlight {
   id: number
   created_at?: string
@@ -128,6 +130,83 @@ function SpotlightCenter() {
       })
       .sort((a, b) => a.expiresTime - b.expiresTime)
   }, [spotlights, coinSchedule])
+
+  useEffect(() => {
+    const processExpiredAllocations = async () => {
+      try {
+        const nowIso = new Date().toISOString()
+        const { data: allocations, error } = await supabase
+          .from('spotlights_allocations')
+          .select('id, users_id, amount, percent, status, expired_at')
+          .eq('status', 'active')
+          .lte('expired_at', nowIso)
+
+        if (error) {
+          console.error('Не удалось получить активные аллокации', error)
+          return
+        }
+
+        if (!allocations || allocations.length === 0) return
+
+        for (const allocation of allocations) {
+          const amountValue = Number(allocation.amount ?? 0)
+          const { data: userRow, error: userError } = await supabase
+            .from('spotlights_users')
+            .select('id, email, balance')
+            .eq('id', allocation.users_id)
+            .maybeSingle()
+
+          if (userError || !userRow) {
+            console.error('Не удалось получить пользователя для аллокации', allocation.id, userError)
+            continue
+          }
+
+          const percentValue = Number(allocation.percent ?? 0)
+          const bonus = amountValue * (percentValue / 100)
+          const total = amountValue + bonus
+          const newBalance = Number((Number(userRow.balance ?? 0) + total).toFixed(2))
+
+          const { error: balanceError } = await supabase
+            .from('spotlights_users')
+            .update({ balance: newBalance })
+            .eq('id', userRow.id)
+
+          if (balanceError) {
+            console.error('Не удалось обновить баланс пользователя', userRow.id, balanceError)
+            continue
+          }
+
+          const { error: closeError } = await supabase
+            .from('spotlights_allocations')
+            .update({ status: 'closed' })
+            .eq('id', allocation.id)
+
+          if (closeError) {
+            console.error('Не удалось закрыть аллокацию', allocation.id, closeError)
+          }
+
+          if (typeof window !== 'undefined') {
+            try {
+              const storedRaw = window.localStorage.getItem(STORAGE_KEY)
+              if (storedRaw) {
+                const parsed = JSON.parse(storedRaw)
+                if (parsed?.email === userRow.email) {
+                  const updatedStored = { ...parsed, balance: newBalance }
+                  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStored))
+                }
+              }
+            } catch (storageError) {
+              console.error('Не удалось обновить локальный баланс пользователя', storageError)
+            }
+          }
+        }
+      } catch (processError) {
+        console.error('Ошибка обработки аллокаций', processError)
+      }
+    }
+
+    processExpiredAllocations()
+  }, [])
 
   const formatRemaining = (iso?: string | null) => {
     if (!iso) return null
