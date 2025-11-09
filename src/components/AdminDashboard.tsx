@@ -148,7 +148,7 @@ const AdminDashboard = () => {
 
       if (error) throw error
       const balanceValue = parseBalanceValue(data?.balance)
-      setBalanceInput(balanceValue !== null ? balanceValue.toString() : '')
+      setBalanceInput(balanceValue !== null ? balanceValue.toString() : '0')
     } catch (err: any) {
       console.error('Не удалось получить баланс пользователя', err)
       setBalanceError(err.message || 'Не удалось получить текущий баланс.')
