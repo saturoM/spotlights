@@ -292,9 +292,7 @@ const WithdrawPage = () => {
           )}
 
           <div className="withdraw-actions">
-            <button type="button" className="withdraw-secondary-button" onClick={() => navigate('/topup')}>
-              Пополнить баланс
-            </button>
+
             <button type="submit" className="withdraw-primary-button" disabled={submitLoading}>
               {submitLoading ? 'Отправка...' : 'Отправить заявку'}
             </button>
