@@ -281,18 +281,17 @@ const AdminDashboard = () => {
                       <td colSpan={4} className="empty-cell">Пользователи не найдены</td>
                     </tr>
                   ) : (
-                    users.map((user) => (
-                      <tr key={`${user.email}-${user.created_at}`}>
-                        <td>{user.email}</td>
-                        <td>{user.type ?? 'user'}</td>
-                        <td>{
-                          parseBalanceValue(user.balance) !== null
-                            ? `${parseBalanceValue(user.balance)!.toFixed(2)} USDT`
-                            : '—'
-                        }</td>
-                        <td>{formatDate(user.created_at)}</td>
-                      </tr>
-                    ))
+                    users.map((user) => {
+                      const normalizedBalance = parseBalanceValue(user.balance)
+                      return (
+                        <tr key={`${user.email}-${user.created_at}`}>
+                          <td>{user.email}</td>
+                          <td>{user.type ?? 'user'}</td>
+                          <td>{normalizedBalance !== null ? `${normalizedBalance.toFixed(2)} USDT` : '—'}</td>
+                          <td>{formatDate(user.created_at)}</td>
+                        </tr>
+                      )
+                    })
                   )}
                 </tbody>
               </table>
