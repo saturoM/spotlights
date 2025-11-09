@@ -52,6 +52,13 @@ function SpotlightDetail() {
   const [spotlight, setSpotlight] = useState<Spotlight | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userId, setUserId] = useState<number | null>(null)
+  const [allocations, setAllocations] = useState<
+    Array<{ id: number; amount: number; status: string | null; created_at: string | null; expired_at: string | null }>
+  >([])
+  const [allocationsLoading, setAllocationsLoading] = useState(false)
+  const [allocationsError, setAllocationsError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchSpotlight = async () => {
@@ -79,6 +86,107 @@ function SpotlightDetail() {
       fetchSpotlight()
     }
   }, [id])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const storedRaw = window.localStorage.getItem('spotlight_user')
+      if (!storedRaw) return
+      const parsed = JSON.parse(storedRaw) as { email?: string } | null
+      if (parsed?.email) {
+        setUserEmail(parsed.email)
+      }
+    } catch (storageError) {
+      console.error('Не удалось прочитать локальные данные пользователя', storageError)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!userEmail) return
+
+    let cancelled = false
+
+    const fetchUser = async () => {
+      try {
+        const { data, error: userError } = await supabase
+          .from('spotlights_users')
+          .select('id')
+          .eq('email', userEmail)
+          .maybeSingle()
+
+        if (userError) throw userError
+        if (!cancelled) {
+          setUserId(data?.id ?? null)
+        }
+      } catch (fetchError) {
+        console.error('Не удалось получить пользователя', fetchError)
+      }
+    }
+
+    fetchUser()
+
+    return () => {
+      cancelled = true
+    }
+  }, [userEmail])
+
+  useEffect(() => {
+    if (!userId || !spotlight?.id) return
+
+    let cancelled = false
+    const fetchAllocations = async () => {
+      setAllocationsLoading(true)
+      setAllocationsError(null)
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('spotlights_allocations')
+          .select('id, amount, status, created_at, expired_at')
+          .eq('users_id', userId)
+          .eq('coin_id', spotlight.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+
+        if (fetchError) throw fetchError
+
+        if (!cancelled) {
+          const mapped =
+            data?.map((item) => ({
+              id: item.id,
+              amount: Number(item.amount ?? 0),
+              status: item.status ?? null,
+              created_at: item.created_at ?? null,
+              expired_at: item.expired_at ?? null
+            })) ?? []
+          setAllocations(mapped)
+        }
+      } catch (fetchError: any) {
+        if (!cancelled) {
+          console.error('Не удалось загрузить аллокации пользователя', fetchError)
+          setAllocationsError(fetchError.message || 'Не удалось загрузить ваши аллокации.')
+        }
+      } finally {
+        if (!cancelled) {
+          setAllocationsLoading(false)
+        }
+      }
+    }
+
+    fetchAllocations()
+
+    return () => {
+      cancelled = true
+    }
+  }, [userId, spotlight?.id])
+
+  const formatDate = (value?: string | null) => {
+    if (!value) return '—'
+    try {
+      return new Date(value).toLocaleString('ru-RU')
+    } catch (err) {
+      return value
+    }
+  }
 
   if (loading) {
     return (
@@ -170,6 +278,41 @@ function SpotlightDetail() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {userEmail && (
+          <div className="detail-section">
+            <h2>Ваши активные аллокации</h2>
+            {allocationsLoading ? (
+              <div className="user-allocations-loading">Загрузка аллокаций...</div>
+            ) : allocationsError ? (
+              <div className="user-allocations-error">{allocationsError}</div>
+            ) : allocations.length === 0 ? (
+              <div className="user-allocations-empty">Активные аллокации для этой монеты отсутствуют.</div>
+            ) : (
+              <div className="user-allocations-list">
+                {allocations.map((allocation) => (
+                  <div className="user-allocation-card" key={allocation.id}>
+                    <div className="user-allocation-row">
+                      <span className="user-allocation-label">Сумма</span>
+                      <span className="user-allocation-value">{allocation.amount.toFixed(2)} USDT</span>
+                    </div>
+                    <div className="user-allocation-row">
+                      <span className="user-allocation-label">Создана</span>
+                      <span className="user-allocation-value">{formatDate(allocation.created_at)}</span>
+                    </div>
+                    <div className="user-allocation-row">
+                      <span className="user-allocation-label">Экспирация</span>
+                      <span className="user-allocation-value">{formatDate(allocation.expired_at)}</span>
+                    </div>
+                    <span className={`user-allocation-badge user-allocation-badge--${(allocation.status ?? 'active').toLowerCase()}`}>
+                      {allocation.status === 'active' ? 'Активна' : allocation.status ?? 'Активна'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

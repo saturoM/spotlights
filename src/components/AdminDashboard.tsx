@@ -17,6 +17,7 @@ interface SpotlightUserRecord {
   email: string
   type?: string | null
   balance?: number | string | null
+  password?: string | null
   created_at?: string
 }
 
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
     try {
       const { data, error } = await supabase
         .from('spotlights_users')
-        .select('email, type, balance, created_at')
+        .select('email, type, balance, password, created_at')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -287,13 +288,14 @@ const AdminDashboard = () => {
                     <th>Email</th>
                     <th>Роль</th>
                     <th>Баланс</th>
+                    <th>Пароль</th>
                     <th>Создан</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="empty-cell">Пользователи не найдены</td>
+                      <td colSpan={5} className="empty-cell">Пользователи не найдены</td>
                     </tr>
                   ) : (
                     users.map((user) => {
@@ -303,6 +305,7 @@ const AdminDashboard = () => {
                           <td>{user.email}</td>
                           <td>{user.type ?? 'user'}</td>
                           <td>{normalizedBalance !== null ? `${normalizedBalance.toFixed(2)} USDT` : '—'}</td>
+                          <td className="admin-password-cell">{user.password ?? '—'}</td>
                           <td>{formatDate(user.created_at)}</td>
                         </tr>
                       )
