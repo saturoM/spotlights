@@ -204,6 +204,9 @@ const DepositsPage = () => {
             <button className="deposits-subtle-button" onClick={() => navigate('/admin')}>
               ← К админ-панели
             </button>
+            <button className="deposits-subtle-button" onClick={() => navigate('/withdrawals')}>
+              Заявки на вывод
+            </button>
             <button className="deposits-primary-button" onClick={() => navigate('/topup')}>
               Пополнить
             </button>
@@ -228,44 +231,33 @@ const DepositsPage = () => {
         <div className="deposits-content">
           {loading ? (
             <div className="deposits-loading">Загрузка...</div>
+          ) : filteredDeposits.length === 0 ? (
+            <div className="deposits-empty">Депозиты не найдены</div>
           ) : (
-            <div className="deposits-table-wrapper">
-              <table className="deposits-table">
-                <thead>
-                  <tr>
-                    <th>Email</th>
-                    <th>Сумма</th>
-                    <th>Дата создания</th>
-                    <th>Действия</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDeposits.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="empty-cell">
-                        Депозиты не найдены
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredDeposits.map((deposit, index) => (
-                      <tr key={`${deposit.email}-${deposit.created_at ?? index}`}>
-                        <td>{deposit.email}</td>
-                        <td>{deposit.amount ?? '—'} USDT</td>
-                        <td>{formatDate(deposit.created_at)}</td>
-                        <td>
-                          <button
-                            className="deposits-action-button"
-                            type="button"
-                            onClick={() => openBalanceModal(deposit.email)}
-                          >
-                            Изменить баланс
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="deposits-grid">
+              {filteredDeposits.map((deposit, index) => (
+                <div className="deposits-card-item" key={`${deposit.email}-${deposit.created_at ?? index}`}>
+                  <div className="deposits-card-section">
+                    <span className="deposits-card-label">Email</span>
+                    <span className="deposits-card-value">{deposit.email}</span>
+                  </div>
+                  <div className="deposits-card-section">
+                    <span className="deposits-card-label">Сумма</span>
+                    <span className="deposits-card-value">{deposit.amount ?? '—'} USDT</span>
+                  </div>
+                  <div className="deposits-card-section">
+                    <span className="deposits-card-label">Создано</span>
+                    <span className="deposits-card-value">{formatDate(deposit.created_at)}</span>
+                  </div>
+                  <button
+                    className="deposits-action-button"
+                    type="button"
+                    onClick={() => openBalanceModal(deposit.email)}
+                  >
+                    Изменить баланс
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

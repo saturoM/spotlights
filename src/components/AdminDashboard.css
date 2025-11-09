@@ -26,6 +26,18 @@
   gap: 1rem;
 }
 
+.admin-header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.admin-shortcuts {
+  display: inline-flex;
+  gap: 0.75rem;
+}
+
 .admin-header h1 {
   margin: 0;
   font-size: 2.2rem;
@@ -195,6 +207,12 @@
   transform: translateY(-2px);
 }
 
+.admin-shortcuts .admin-subtle-button,
+.admin-shortcuts .admin-primary-button {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+}
+
 .admin-action-button {
   background: rgba(46, 204, 113, 0.2);
   border: 1px solid rgba(46, 204, 113, 0.4);
@@ -333,6 +351,20 @@
   .admin-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .admin-header-controls {
+    align-items: stretch;
+  }
+
+  .admin-shortcuts {
+    flex-wrap: wrap;
+  }
+
+  .admin-shortcuts .admin-subtle-button,
+  .admin-shortcuts .admin-primary-button {
+    flex: 1;
+    text-align: center;
   }
 
   .admin-tabs {

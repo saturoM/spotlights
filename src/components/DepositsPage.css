@@ -118,55 +118,76 @@
   padding: 2rem 0;
 }
 
-.deposits-table-wrapper {
-  background: rgba(10, 10, 16, 0.85);
-  border: 1px solid rgba(102, 126, 234, 0.2);
-  border-radius: 16px;
-  overflow: hidden;
+.deposits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
 }
 
-.deposits-table {
+.deposits-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  background: linear-gradient(150deg, rgba(26, 30, 72, 0.92), rgba(14, 18, 42, 0.94));
+  box-shadow: 0 16px 36px rgba(8, 12, 24, 0.4);
+  max-width: 200px;
   width: 100%;
-  border-collapse: collapse;
 }
 
-.deposits-table thead {
-  background: rgba(102, 126, 234, 0.15);
+.deposits-card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
-.deposits-table th,
-.deposits-table td {
-  padding: 1rem 1.2rem;
-  text-align: left;
-  color: #dfe2ff;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.15);
+.deposits-card-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(178, 186, 233, 0.7);
+}
+
+.deposits-card-value {
+  color: #f5f7ff;
+  font-weight: 600;
   font-size: 0.95rem;
-}
-
-.deposits-table tbody tr:hover {
-  background: rgba(102, 126, 234, 0.08);
+  word-break: break-word;
 }
 
 .deposits-action-button {
-  background: rgba(46, 204, 113, 0.2);
-  border: 1px solid rgba(46, 204, 113, 0.4);
-  color: #d3f9e6;
-  border-radius: 8px;
-  padding: 0.45rem 1rem;
+  margin-top: 0.25rem;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.9), rgba(24, 188, 156, 0.9));
+  border: none;
+  color: #e9ffee;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .deposits-action-button:hover {
-  transform: translateY(-1px);
-  background: rgba(46, 204, 113, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(46, 204, 113, 0.28);
 }
 
-.empty-cell {
+.deposits-action-button:active {
+  transform: translateY(0);
+}
+
+.deposits-empty {
+  width: 100%;
+  padding: 2rem;
   text-align: center;
-  color: #8f93b5;
-  font-style: italic;
+  border-radius: 14px;
+  border: 1px dashed rgba(102, 126, 234, 0.35);
+  color: #aeb5d9;
+  background: rgba(14, 18, 38, 0.65);
 }
 
 .balance-modal-overlay {
@@ -300,5 +321,13 @@
 
   .deposits-search {
     width: 100%;
+  }
+
+  .deposits-grid {
+    justify-content: center;
+  }
+
+  .deposits-card-item {
+    max-width: 100%;
   }
 }

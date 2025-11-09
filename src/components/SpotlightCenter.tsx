@@ -234,9 +234,6 @@ function SpotlightCenter() {
         )}
       </div>
 
-      <div className="spotlight-count">
-        Всего проектов: {spotlights.length}
-      </div>
     </div>
   )
 }

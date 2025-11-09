@@ -237,9 +237,19 @@ const AdminDashboard = () => {
         <div className="admin-header">
           <div>
             <h1>Админ панель</h1>
-            <p>Управление пользователями и заявками на пополнение</p>
+            <p>Управление пользователями и заявками на пополнение и вывод</p>
           </div>
-          <button className="admin-back-button" onClick={() => navigate('/')}>← На главную</button>
+          <div className="admin-header-controls">
+            <button className="admin-back-button" onClick={() => navigate('/')}>← На главную</button>
+            <div className="admin-shortcuts">
+              <button className="admin-subtle-button" type="button" onClick={() => navigate('/deposits')}>
+                Заявки на пополнение
+              </button>
+              <button className="admin-primary-button" type="button" onClick={() => navigate('/withdrawals')}>
+                Заявки на вывод
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="admin-tabs">

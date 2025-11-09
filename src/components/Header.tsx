@@ -115,6 +115,42 @@ const Header = () => {
     })()
   }, [])
 
+  useEffect(() => {
+    if (!currentUserEmail) return
+
+    const channel = supabase
+      .channel(`spotlights_users_${currentUserEmail}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'spotlights_users',
+          filter: `email=eq.${currentUserEmail}`
+        },
+        (payload) => {
+          const nextType = (payload.new as { type?: string } | null)?.type ?? null
+          const nextBalance = parseBalanceValue((payload.new as { balance?: unknown } | null)?.balance)
+          setCurrentUserType(nextType)
+          setCurrentUserBalance(nextBalance)
+
+          if (typeof window !== 'undefined') {
+            const stored: StoredUser = {
+              email: currentUserEmail,
+              type: nextType ?? undefined,
+              balance: nextBalance ?? undefined
+            }
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUserEmail])
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
     setFormState((prev) => ({ ...prev, [name]: value }))
@@ -284,12 +320,13 @@ const Header = () => {
     navigate('/topup')
   }
 
-  const handleOpenAdmin = () => {
-    navigate('/admin')
+  const handleWithdraw = () => {
+    setIsModalOpen(false)
+    navigate('/withdraw')
   }
 
-  const handleOpenDeposits = () => {
-    navigate('/deposits')
+  const handleOpenAdmin = () => {
+    navigate('/admin')
   }
 
   const handleLogout = async () => {
@@ -338,16 +375,21 @@ const Header = () => {
           </>
         )}
         {currentUserEmail && (
-          <div className="balance-wrapper">
-            <span className="balance-label">
-              Баланс:{' '}
+          <div className="balance-card">
+            <div className="balance-info">
+              <span className="balance-label">Баланс</span>
               <span className="balance-value">
                 {currentUserBalance !== null ? currentUserBalance.toFixed(2) : '—'} USDT
               </span>
-            </span>
-            <button className="topup-button" onClick={handleTopUp}>
-              Пополнить
-            </button>
+            </div>
+            <div className="balance-actions">
+              <button className="topup-button" onClick={handleTopUp}>
+                Пополнить
+              </button>
+              <button className="withdraw-button" onClick={handleWithdraw}>
+                Вывод
+              </button>
+            </div>
           </div>
         )}
         <button
