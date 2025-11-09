@@ -235,18 +235,27 @@ const WithdrawPage = () => {
 
           <div className="withdraw-field">
             <label htmlFor="withdrawNetwork">Сеть вывода</label>
-            <select
-              id="withdrawNetwork"
-              value={network}
-              onChange={(event) => setNetwork(event.target.value as NetworkKey)}
-              disabled={submitLoading}
-            >
-              {Object.entries(NETWORKS).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value.label}
-                </option>
-              ))}
-            </select>
+            <div className="withdraw-select-wrapper">
+              <select
+                id="withdrawNetwork"
+                value={network}
+                onChange={(event) => setNetwork(event.target.value as NetworkKey)}
+                disabled={submitLoading}
+                className="withdraw-select"
+              >
+                {Object.entries(NETWORKS).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {value.label}
+                  </option>
+                ))}
+              </select>
+              <div className="withdraw-select-overlay" aria-hidden="true">
+                <span className="withdraw-select-text">
+                  {NETWORKS[network].label}
+                </span>
+                <span className="withdraw-select-icon">▾</span>
+              </div>
+            </div>
           </div>
 
           <div className="withdraw-field">
@@ -279,7 +288,7 @@ const WithdrawPage = () => {
 
           {formError && <div className="withdraw-error">{formError}</div>}
           {status === 'success' && (
-            <div className="withdraw-success">Заявка отправлена. Администратор свяжется с вами в ближайшее время.</div>
+            <div className="withdraw-success">Заявка отправлена.</div>
           )}
 
           <div className="withdraw-actions">

@@ -109,6 +109,82 @@
   font-weight: 600;
 }
 
+.withdraw-select-wrapper {
+  position: relative;
+  display: block;
+}
+
+.withdraw-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.withdraw-select-overlay {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(102, 126, 234, 0.45);
+  background: radial-gradient(circle at top left, rgba(102, 126, 234, 0.25), rgba(12, 12, 20, 0.85));
+  color: #f1f3ff;
+  font-size: 1rem;
+  padding: 0.95rem 1.1rem;
+  transition: border 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.withdraw-select-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6)) border-box;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.withdraw-select-text {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.withdraw-select-icon {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+}
+
+.withdraw-select-wrapper:hover .withdraw-select-overlay {
+  transform: translateY(-2px);
+  border-color: rgba(102, 126, 234, 0.75);
+  box-shadow: 0 16px 32px rgba(22, 30, 72, 0.35);
+}
+
+.withdraw-select-wrapper:hover .withdraw-select-overlay::after {
+  opacity: 0.6;
+}
+
+.withdraw-select:focus + .withdraw-select-overlay,
+.withdraw-select:focus-visible + .withdraw-select-overlay {
+  border-color: rgba(102, 126, 234, 0.9);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.22);
+}
+
+.withdraw-select:focus + .withdraw-select-overlay .withdraw-select-icon {
+  transform: rotate(180deg);
+}
+
 .withdraw-field select,
 .withdraw-field input[type='text'],
 .withdraw-field textarea {
@@ -123,7 +199,6 @@
   transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
-.withdraw-field select:focus,
 .withdraw-field input[type='text']:focus,
 .withdraw-field textarea:focus {
   border-color: rgba(102, 126, 234, 0.65);
