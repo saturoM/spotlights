@@ -250,6 +250,9 @@ const AdminDashboard = () => {
               <button className="admin-primary-button" type="button" onClick={() => navigate('/withdrawals')}>
                 Заявки на вывод
               </button>
+              <button className="admin-subtle-button" type="button" onClick={() => navigate('/admin/allocations')}>
+                Аллокации
+              </button>
             </div>
           </div>
         </div>

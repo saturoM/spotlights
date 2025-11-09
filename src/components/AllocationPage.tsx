@@ -169,10 +169,17 @@ const AllocationPage = () => {
         throw new Error(balanceError.message)
       }
 
+      const activeCoin = activePositions.has(Number(coinRecord.position))
+        ? coinSchedule.initialState.active.find((coin) => coin.id === Number(coinRecord.position))
+        : undefined
+
+      const expiredAt = activeCoin?.expiresAt ?? null
+
       const { error: allocationError } = await supabase.from('spotlights_allocations').insert({
         users_id: userRow.id,
         coin_id: selectedCoin,
-        amount: numericAmount
+        amount: numericAmount,
+        expired_at: expiredAt ?? null
       })
 
       if (allocationError) {
