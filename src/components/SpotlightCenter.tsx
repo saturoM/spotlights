@@ -101,7 +101,11 @@ function SpotlightCenter() {
   const [spotlights, setSpotlights] = useState<Spotlight[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const coinSchedule = useMemo(() => generateCoinSchedule({ eventCount: 20 }), [])
+  const coinSchedule = useMemo(() => {
+    // Стартова дата: 11 листопада 2025, 22:00 UTC+0
+    const startDate = new Date(Date.UTC(2025, 10, 11, 22, 0, 0)) // місяць 10 = листопад (0-індексація)
+    return generateCoinSchedule({ eventCount: 20, startDate })
+  }, [])
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat('ru-RU', {
