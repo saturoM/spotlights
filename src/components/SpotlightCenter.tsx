@@ -101,9 +101,10 @@ function SpotlightCenter() {
   const [spotlights, setSpotlights] = useState<Spotlight[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentTime, setCurrentTime] = useState(Date.now())
   const coinSchedule = useMemo(() => {
     // Стартова дата: 11 листопада 2025, 22:00 UTC+0
-    const startDate = new Date(Date.UTC(2025, 10, 11, 22, 0, 0)) // місяць 10 = листопад (0-індексація)
+    const startDate = new Date(Date.UTC(2025, 10, 11, 22, 0, 0)) // місяць 10 = листопад (0-індексація
     return generateCoinSchedule({ eventCount: 20, startDate })
   }, [])
   const dateFormatter = useMemo(
@@ -118,22 +119,68 @@ function SpotlightCenter() {
     []
   )
 
+  // Update current time every second to re-check active status and update countdown
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 1000) // Update every second
+
+    return () => clearInterval(interval)
+  }, [])
+
   const preparedSpotlights = useMemo(() => {
-    const activeCoinsById = new Map<number, (typeof coinSchedule.initialState.active)[number]>()
+    // Calculate current active coins by applying events that have occurred
+    const activeCoinsMap = new Map<number, { id: number; activatedAt: string; expiresAt: string }>()
+    
+    // Start with initial active coins
     coinSchedule.initialState.active.forEach((coin) => {
-      activeCoinsById.set(coin.id, coin)
+      if (coin.activatedAt && coin.expiresAt) {
+        activeCoinsMap.set(coin.id, {
+          id: coin.id,
+          activatedAt: coin.activatedAt,
+          expiresAt: coin.expiresAt
+        })
+      }
     })
+
+    // Apply all events that have occurred up to current time
+    const sortedEvents = [...coinSchedule.events].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+
+    for (const event of sortedEvents) {
+      const eventTime = new Date(event.timestamp).getTime()
+      if (eventTime <= currentTime) {
+        // Remove expiring coin
+        activeCoinsMap.delete(event.expiringCoin)
+        
+        // Add activating coin with new activation time
+        activeCoinsMap.set(event.activatingCoin, {
+          id: event.activatingCoin,
+          activatedAt: event.timestamp,
+          expiresAt: event.activationEndsAt
+        })
+      }
+    }
 
     return spotlights
       .map((spotlight) => {
         const positionRaw = spotlight.position ?? spotlight.positions ?? spotlight.order ?? spotlight.coin_id
         const position = typeof positionRaw === 'number' ? positionRaw : parseInt(String(positionRaw), 10)
-        const activeCoin = Number.isFinite(position) ? activeCoinsById.get(Number(position)) : undefined
-        const expiresTime = activeCoin ? new Date(activeCoin.expiresAt!).getTime() : Number.MAX_SAFE_INTEGER
+        const coinData = Number.isFinite(position) ? activeCoinsMap.get(Number(position)) : undefined
+        
+        // Check if coin is still active (exists in current active map AND hasn't expired yet)
+        const activeCoin = coinData && coinData.expiresAt
+          ? (currentTime < new Date(coinData.expiresAt).getTime() 
+              ? { id: coinData.id, activatedAt: coinData.activatedAt, expiresAt: coinData.expiresAt }
+              : undefined)
+          : undefined
+        
+        const expiresTime = activeCoin ? new Date(activeCoin.expiresAt).getTime() : Number.MAX_SAFE_INTEGER
         return { spotlight, position, activeCoin, expiresTime }
       })
       .sort((a, b) => a.expiresTime - b.expiresTime)
-  }, [spotlights, coinSchedule])
+  }, [spotlights, coinSchedule, currentTime])
 
   useEffect(() => {
     const processExpiredAllocations = async () => {
@@ -215,8 +262,7 @@ function SpotlightCenter() {
   const formatRemaining = (iso?: string | null) => {
     if (!iso) return null
     const target = new Date(iso).getTime()
-    const now = Date.now()
-    const diffMs = target - now
+    const diffMs = target - currentTime
     if (diffMs <= 0) return 'менее минуты'
     const totalMinutes = Math.floor(diffMs / (60 * 1000))
     const days = Math.floor(totalMinutes / (60 * 24))
